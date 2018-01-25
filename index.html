@@ -1,0 +1,496 @@
+<!DOCTYPE HTML>
+<html>
+<meta charset="utf-8">
+<title>MyGame</title>
+<head>
+<style>
+    
+</style>
+<link rel="stylesheet" href="./game.css">
+</head>
+<body>
+<div id="screen">
+    <div id="caption">TENNIS</div>
+    <input id="leftPlayer" type="text" placeholder="left player">
+    <input id="rightPlayer" type="text" placeholder="right player">
+    <input id="playGameInput" type="button" value="Играть" onclick='playGame()'>
+    <input id="recordsInput" type="button" value="Рекорды" onclick="RestoreInfo()">
+</div>
+<div id="wrapper">
+    <br>
+    <div>
+        <input id="startInput" type='button' value='Старт' onclick='start()'>
+        <textarea id='textarea' onkeydown="moveDownControls()" onkeyup="moveUpControls()"></textarea>
+        <div id="score"></div>
+        <input id="restartInput" type="button" value="Сменить игрока" onclick="restartInput()">
+    </div>
+
+    <div id='area'>
+        <div id='leftRacket'></div>
+        <div id='rightRacket'></div>
+        <div id='ball'>
+            <img id="ballImg" src="http://effects1.ru/png/kartinka/2/sport/mjach/mjach_21-320.png">
+        </div>
+    </div>
+</div>
+
+<script src='http://fe.it-academy.by/JQ/jquery.js'></script>
+<script>
+    
+var windowWidth = document.documentElement.clientWidth;
+var windowHeight = document.documentElement.clientHeight;
+    
+var screenH =
+    {
+        width: 0,
+        height: 0,
+        update: function() {
+            document.getElementById('screen').style.width = '100%';
+            document.getElementById('screen').style.height = windowHeight + 'px';
+            
+            var playGameInput = document.getElementById('playGameInput');
+                playGameInput.style.left = (windowWidth / 2.5 - playGameInput.offsetWidth) + 'px';
+                playGameInput.style.top = (windowHeight / 2 - playGameInput.offsetHeight / 2) + 'px';
+            
+            var recordsInput = document.getElementById('recordsInput');
+                recordsInput.style.left = (windowWidth / 2.5 + recordsInput.offsetWidth) + 'px';
+                recordsInput.style.top = (windowHeight / 2 - recordsInput.offsetHeight / 2) + 'px';
+            
+            var leftPlayer = document.getElementById('leftPlayer');
+                leftPlayer.style.left = (document.getElementById('screen').offsetWidth / 2 - leftPlayer.offsetWidth) + 'px';
+                leftPlayer.style.top = (windowHeight / 3 - leftPlayer.offsetHeight / 2) + 'px';
+            
+            var rightPlayer = document.getElementById('rightPlayer');
+                rightPlayer.style.left = (document.getElementById('screen').offsetWidth / 2) + 'px';
+                rightPlayer.style.top = (windowHeight / 3 - rightPlayer.offsetHeight / 2) + 'px';
+        }
+    }
+
+function playGame() {
+    ClickSoundInit();
+    
+    playersH.left = document.getElementById('leftPlayer').value;
+    playersH.right = document.getElementById('rightPlayer').value;
+    console.log(playersH.left);
+    console.log(playersH.right);
+    resultUpdate();
+    
+    document.getElementById('screen').style.overflow = 'hidden';
+    //document.getElementById('screen').innerHTML = '';
+    document.getElementById('screen').style.height = 0 + 'px';
+    
+    textarea.focus();
+    textarea.addEventListener('blur', foc, false);
+}
+function foc() {textarea.focus();}
+function restartInput() {
+    var ques = confirm('При отсутствии финального счёта, данные не сохранятся! Продолжить?');
+    if (ques) {
+        document.getElementById('screen').style.height = windowHeight + 'px';
+        document.getElementById('screen').style.overflow = 'visible';
+        ballH.speedX = 0;
+        ballH.speedY = 0;
+        scoreH.left = 0;
+        scoreH.right = 0;
+        textarea.removeEventListener('blur', foc, false)
+    }
+}
+    
+window.onresize = size;
+    
+function size() {   
+    //var windowWidth = document.documentElement.clientWidth;
+    var wrapperWidth = document.getElementById('wrapper').offsetWidth;
+    var leftMargin = (windowWidth - wrapperWidth) / 2;
+        document.getElementById('wrapper').style.marginLeft = leftMargin + 'px';
+}
+    
+var textarea = document.getElementById('textarea');
+    /*textarea.focus();
+    textarea.addEventListener('blur', foc, false);
+    function foc() {textarea.focus();}*/
+
+    
+var areaH = 
+    {
+        width: 900,
+        height: 500
+    }
+
+var ballH = 
+    {
+        posX: 435,
+        posY: 235,
+        width: 30,
+        radius: document.getElementById('ball').offsetWidth / 2,
+        height: 30,
+        speedX: 0,//5
+        speedY: 0,//4
+        update: function() {
+            var ball = document.getElementById('ball');
+            ball.style.left = this.posX + 'px';
+            ball.style.top = this.posY + 'px';
+        }
+    }
+
+var leftControlH = 
+    {
+        posX: 0,
+        posY: 120,
+        speedY: 0,
+        width: 10,
+        height: 120,
+        update: function() {
+            var leftRacket = document.getElementById('leftRacket');
+            leftRacket.style.top = this.posY + 'px';
+        }
+    }
+var rightControlH = 
+    {
+        posX: 0,
+        posY: 250,
+        speedY: 0,
+        width: 10,
+        height: 120,
+        update: function() {
+            var leftRacket = document.getElementById('rightRacket');
+            rightRacket.style.top = this.posY + 'px';
+            this.posY += this.speedY;
+        }
+    }
+var playersH =
+    {
+        left: 'left Player',
+        right: 'right Player'
+    }
+var scoreH = 
+    {
+        left: 0,
+        right: 0
+    }
+
+function resultUpdate() {
+    var result = playersH.left + ' ' + scoreH.left + ' - ' + scoreH.right + ' ' + playersH.right;
+    var scoreDiv = document.getElementById('score');
+    scoreDiv.innerHTML = result;
+    scoreDiv.style.color = 'red';
+    scoreDiv.style.textShadow = '0 0 7px black';
+    scoreDiv.style.fontSize = '250%';
+    scoreDiv.style.textAlign = 'center';
+    scoreDiv.style.fontWeight = 'bold';
+    
+    if (scoreH.left == 2 || scoreH.right == 2) {
+        if (recordsArr.length < 3) {
+            recordsArr.push(result);
+            //alert(recordsArr);
+        } else {
+            recordsArr.shift();
+            recordsArr.push(result);
+        }
+        console.log(recordsArr);
+    }
+}
+
+//setInterval(move, 30);
+requestAnimationFrame(move);
+    
+function move() {
+    leftControlH.update();
+    leftControlH.posY += leftControlH.speedY;
+        if (leftControlH.posY + leftControlH.height > areaH.height) {
+            leftControlH.speedY = 0;
+            leftControlH.posY = areaH.height - leftControlH.height;
+        }
+        if(leftControlH.posY < 0) {
+            leftControlH.speedY = 0;
+            leftControlH.posY = 0;
+        }
+    // остановка ракетки у мяча (торцом)
+     /*левая ракетка вниз
+        if (leftControlH.posY + leftControlH.height > ballH.posY && leftControlH.posY + leftControlH.height < ballH.posY + ballH.height && ballH.posX == 0) {
+            leftControlH.speedY = 0;
+            leftControlH.posY = ballH.posY - leftControlH.height;
+        }
+     левая ракетка вверх
+        if (leftControlH.posY < ballH.posY + ballH.height && leftControlH.posY > ballH.posY && ballH.posX == 0) {
+            leftControlH.speedY = 0;
+            leftControlH.posY = ballH.posY + ballH.height;
+        }*/
+    
+    rightControlH.update();
+        if (rightControlH.posY + rightControlH.height > areaH.height) {
+            rightControlH.speedY = 0;
+            rightControlH.posY = areaH.height - rightControlH.height;
+        }
+        if(rightControlH.posY < 0) {
+            rightControlH.speedY = 0;
+            rightControlH.posY = 0;
+        }
+    
+    ballH.update();
+    moveBall();
+    requestAnimationFrame(move);
+}
+
+function moveUpControls(EO) {
+    EO = EO || window.event;
+    EO.preventDefault();
+    
+    if ( EO.keyCode==17) {
+        leftControlH.speedY = 0;
+    }
+    if ( EO.keyCode==16) {
+        leftControlH.speedY = 0;
+    }
+    if (EO.keyCode == 38) {
+        rightControlH.speedY = 0;
+    }
+    if (EO.keyCode == 40) {
+        rightControlH.speedY = 0;
+    }
+}
+function moveDownControls(EO)
+{
+    EO = EO || window.event;
+    EO.preventDefault();
+      
+    if ( EO.keyCode==17) {
+        leftControlH.speedY = 5;
+        /*if (leftControlH.posY + leftControlH.height >= ballH.posY && ballH.posX == leftControlH.posX) {
+            //EO.preventDefault();
+            leftControlH.speedY = 0;
+            leftControlH.posY = ballH.posY - leftControlH.height;
+            console.log('bla');
+        }*/
+    }
+    if ( EO.keyCode==16) {
+        leftControlH.speedY = -5;
+    }
+    if (EO.keyCode == 38) {
+        rightControlH.speedY = -5;
+    }
+    if (EO.keyCode == 40) {
+        rightControlH.speedY = 5;
+    }
+}
+
+
+// определяет направление мяча по X    
+var rand1 = Math.round(Math.random());
+    console.log(rand1);
+// определяет направление мяча по Н
+var rand2 = Math.round(Math.random());
+    console.log(rand2);
+
+function moveBall() {
+    
+    // если 0 - летит вправо, если 1 - влево
+    /*if (rand1 == 1) {
+        ballH.posX -= ballH.speedX;
+        ballH.posX -= ballH.speedX;
+    }*/
+    
+    // отскок от левой ракетки
+    if (ballH.posY >= leftControlH.posY && ballH.posY <= leftControlH.posY + leftControlH.height && ballH.posX <= 0 + leftControlH.width) {
+        ballH.speedX = -ballH.speedX;
+        ClickSound1();
+    }
+    // отскок от правой ракетки
+    if (ballH.posY >= rightControlH.posY && ballH.posY <= rightControlH.posY + rightControlH.height && ballH.posX + ballH.width >= areaH.width - rightControlH.width) {
+        ballH.speedX = -ballH.speedX;
+        ClickSound1();
+    }
+    
+    ballH.posX += ballH.speedX;
+    
+    // подсчёт очков
+    if (ballH.posX + ballH.width == areaH.width) {
+        scoreH.left++;
+        console.log('Игрок 1: ' + scoreH.left);
+        scoreSoundPlay();
+        resultUpdate();
+    }
+    if (ballH.posX == 0) {
+        /*ballH.speedX = -ballH.speedX;
+        ballH.posX = 0;
+        ballH.speedX = 0;
+        ballH.speedY = 0;*/
+        scoreH.right++;
+        console.log('Игрок 2: ' + scoreH.right);
+        //scoreSoundPlay();
+        resultUpdate();
+    }
+    
+    // остановка мяча после засчитывания очка
+    if (ballH.posX > areaH.width) {
+        ballH.speedX = 0;
+        ballH.speedY = 0;
+        document.getElementById('ball').style.opacity = 0;
+    }
+    if (ballH.posX + ballH.width < 0) {
+        ballH.speedX = 0;
+        ballH.speedY = 0;
+        document.getElementById('ball').style.opacity = 0;
+    }
+    
+    ballH.posY += ballH.speedY;
+    
+    // одскок от стенок поля
+    if (ballH.posY + ballH.height > areaH.height) {
+        ballH.speedY = -ballH.speedY;
+        ballH.posY = areaH.height - ballH.height;
+        wallSoundplay();
+        vibrate(200);
+    }
+    if (ballH.posY < 0) {
+        ballH.speedY = -ballH.speedY;
+        ballH.posY = 0;
+        wallSoundplay();
+        vibrate(200);
+    }
+    ballH.update();
+}
+
+var ClickAudio=new Audio('http://garrens.com/atronic92/cstrike/sound/ambience/3dm_bik_ball.wav');
+var wallSound = new Audio('http://www.flan4u.com/downloads/Wave-files/sound-effects/ADJUST.WAV');
+var scoreSound = new Audio('./resources/score+Sound.wav');
+      
+function start() {
+    if ((scoreH.left == 2&&scoreH.right < 2) || (scoreH.left < 2&&scoreH.right == 2)) {
+        StoreInfo(); //перезаписать массив в json на сервере
+        var quest = confirm('Есть победитель! Обновить игроков?');
+        
+        if (quest) {
+            restartInput();
+        }
+             
+        //console.log(jsonStr);
+        return;
+    }
+        ballH.posX = 435;
+        ballH.posY = 235;
+        document.getElementById('ball').style.opacity = 1;
+        ballH.speedX = 5;
+        ballH.speedY = 4;
+        ballH.update();
+
+}
+    function ClickSoundInit() {
+        ClickAudio.play();
+        ClickAudio.pause();
+        wallSound.play();
+        wallSound.pause();
+        scoreSound.play();
+        scoreSound.pause();
+    }
+    function ClickSound1() {
+        ClickAudio.currentTime=0;
+        ClickAudio.play();
+    }
+    function wallSoundplay() {
+        wallSound.currentTime = 0;
+        wallSound.play();
+    }
+    function scoreSoundPlay() {
+        scoreSound.currentTime = 0;
+        scoreSound.play();
+    }
+    
+    // функция на виброотклик
+    function vibrate(val){
+        if("vibrate" in navigator)  return navigator.vibrate(val);
+        if("oVibrate" in navigator)  return navigator.oVibrate(val);
+        if("mozVibrate" in navigator)  return navigator.mozVibrate(val);
+        if("webkitVibrate" in navigator)  return navigator.webkitVibrate(val);
+    }
+    
+    // работаем с json и ajax
+    var recordsArr = [];
+    
+    var AjaxHandlerScript="http://fe.it-academy.by/AjaxStringStorage2.php";
+    var UpdatePassword;
+    var StringName='Yakimchuk_Tennis';
+      
+
+function RestoreInfo() 
+{
+    $.ajax(
+        {
+            url : AjaxHandlerScript, type : 'POST', cache : false, dataType:'json',
+            data : { f : 'READ', n : StringName },
+            success : ReadReady, error : ErrorHandler
+        }
+    );
+}
+ 
+function ReadReady(ResultH)
+{
+    if ( ResultH.error!=undefined )
+        console.log(ResultH.error); 
+    else if ( ResultH.result!="" )
+    {
+        var recordsArr1=JSON.parse(ResultH.result);
+        
+        console.log(ResultH.result);
+        console.log(recordsArr1);
+        
+        var str = '';
+        recordsArr1.forEach(function(item, i) {
+            str = str + 'Игрок 1 ' + item + ' Игрок 2' + '\n';
+        });
+        alert('Рекорды:' + '\n' + str);
+    }
+}
+
+function StoreInfo() 
+{
+    UpdatePassword=Math.random();
+    $.ajax(
+        {
+            url : AjaxHandlerScript, type : 'POST', cache : false, dataType:'json',
+            data : { f : 'LOCKGET', n : StringName, p : UpdatePassword },
+            success : LockGetReady, error : ErrorHandler
+        }
+    );
+}
+
+function LockGetReady(ResultH) 
+{
+    if ( ResultH.error!=undefined )
+        console.log(ResultH.error); 
+    else
+    {
+        $.ajax(
+            {
+                url : AjaxHandlerScript, type : 'POST', cache : false, dataType:'json',
+                data : { f : 'UPDATE', n : StringName, v : JSON.stringify(recordsArr), p : UpdatePassword },
+                success : UpdateReady, error : ErrorHandler
+            }
+        );
+    }
+}
+
+function UpdateReady(ResultH) 
+{
+    if ( ResultH.error!=undefined )
+        console.log(ResultH.error); 
+}
+
+function ErrorHandler(jqXHR,StatusStr,ErrorStr)
+{
+    console.log(StatusStr+' '+ErrorStr);
+}
+    
+ballH.update();
+leftControlH.update();
+rightControlH.update();
+size();
+    resultUpdate();
+    screenH.update();
+   
+
+</script>
+  <p></p>
+</body>
+
+</html>
